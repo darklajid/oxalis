@@ -155,6 +155,7 @@ public class SMimeMessageFactory {
             throw new OxalisTransmissionException("Unable to generate signed mime multipart." + e.getMessage(), e);
         }
 
+        
         //
         // Get a Session object and create the mail message
         //
@@ -168,6 +169,7 @@ public class SMimeMessageFactory {
         } catch (MessagingException e) {
             throw new OxalisTransmissionException("Unable to  set Content type of MimeMessage. " + e.getMessage(), e);
         }
+
         try {
             mimeMessage.saveChanges();
         } catch (MessagingException e) {

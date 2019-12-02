@@ -49,6 +49,7 @@
         <dependency>
             <groupId>no.difi.oxalis</groupId>
             <artifactId>oxalis-api</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>

@@ -52,12 +52,6 @@ public class ClassLoaderUtilsTest {
         Assert.assertNotEquals(ClassLoaderUtils.initiate(path), current);
     }
 
-    @Test
-    public void simpleRT() {
-        Path path = Paths.get(System.getProperty("java.home"), "lib", "rt.jar");
-        Assert.assertNotEquals(ClassLoaderUtils.initiate(path), current);
-    }
-
     @Test(expectedExceptions = OxalisPluginException.class)
     public void triggerException() {
         Path path = Paths.get(System.getProperty("java.home"), "completely", "invalid", "folder");

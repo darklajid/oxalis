@@ -107,7 +107,6 @@
             <artifactId>zipkin-sender-urlconnection</artifactId>
         </dependency>
 
-
         <!-- OpenTracing -->
         <dependency>
             <groupId>io.opentracing</groupId>
