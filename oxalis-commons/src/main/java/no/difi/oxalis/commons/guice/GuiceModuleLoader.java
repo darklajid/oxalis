@@ -23,6 +23,7 @@
 package no.difi.oxalis.commons.guice;
 
 import com.google.inject.*;
+import com.google.inject.Module;
 import com.google.inject.spi.Message;
 import com.google.inject.util.Modules;
 import com.typesafe.config.Config;
