@@ -1,30 +1,45 @@
-FROM maven:3.3.9-jdk-8 AS mvn
+FROM alpine:3.9 as pom_files
 
-ADD . $MAVEN_HOME
+# Workaround for a docker limitation: We want all pom.xml files in the
+# right file system structure, but COPY/ADD doesn't support this.
+# As a workaround we copy the whole source, delete anything but the pom
+# files afterwards.
+# Redirect to /dev/null to avoid the 'Directory not empty' messages
+COPY . /tmp/src/
+RUN sh -c "find /tmp/src/ ! -name 'pom.xml' -delete &> /dev/null"
 
-RUN cd $MAVEN_HOME \
- && mvn -B clean package -Pdist -Dgit.shallow=true \
- && mv $MAVEN_HOME/target/oxalis-server /oxalis-server \
- && mv $MAVEN_HOME/target/oxalis-standalone /oxalis-standalone \
+FROM maven:3.6.2-jdk-8 AS mvn
+
+WORKDIR /tmp/src/
+
+# Cache only the project file
+COPY --from=pom_files /tmp/src/ .
+
+# Build & cache all dependencies
+RUN mvn dependency:go-offline -B -Pdist
+
+# Bring in the full project sources
+COPY . .
+
+RUN mvn -o -e -B clean package -Pdist -Dgit.shallow=true -DskipTests=true \
  && mkdir -p /oxalis/lib \
- && for f in $(ls /oxalis-server/lib); do \
-    if [ -e /oxalis-standalone/lib/$f ]; then \
-        mv /oxalis-server/lib/$f /oxalis/lib/; \
-        rm /oxalis-standalone/lib/$f; \
+ && for f in $(ls target/oxalis-server/lib); do \
+    if [ -e target/oxalis-standalone/lib/$f ]; then \
+        mv target/oxalis-server/lib/$f /oxalis/lib/; \
+        rm target/oxalis-standalone/lib/$f; \
     fi; \
  done \
- && mv /oxalis-server/bin /oxalis/bin-server \
- && mv /oxalis-server/lib /oxalis/lib-server \
- && mv /oxalis-standalone/bin /oxalis/bin-standalone \
- && mv /oxalis-standalone/lib /oxalis/lib-standalone \
- && cat /oxalis/bin-server/run.sh | sed "s|lib/\*|lib-server/*:lib/*|" > /oxalis/bin-server/run-docker.sh \
- && cat /oxalis/bin-standalone/run.sh | sed "s|lib/\*|lib-standalone/*:lib/*|" > /oxalis/bin-standalone/run-docker.sh \
+ && mv target/oxalis-server/bin /oxalis/bin-server \
+ && mv target/oxalis-server/lib /oxalis/lib-server \
+ && mv target/oxalis-standalone/bin /oxalis/bin-standalone \
+ && mv target/oxalis-standalone/lib /oxalis/lib-standalone \
+ && sed "s|lib/\*|lib-server/*:lib/*|" /oxalis/bin-server/run.sh > /oxalis/bin-server/run-docker.sh \
+ && sed "s|lib/\*|lib-standalone/*:lib/*|" /oxalis/bin-standalone/run.sh > /oxalis/bin-standalone/run-docker.sh \
+ && chmod 755 /oxalis/bin-server/run-docker.sh /oxalis/bin-standalone/run-docker.sh \
  && mkdir /oxalis/bin /oxalis/conf /oxalis/ext /oxalis/inbound /oxalis/outbound /oxalis/plugin \
- && echo "#!/bin/sh\n\nsh /oxalis/bin-\$MODE/run-docker.sh \$@" > /oxalis/bin/run-docker.sh \
- && find /oxalis -name .gitkeep -exec rm -rf '{}' \;
+ && echo "#!/bin/sh\n\nexec /oxalis/bin-\$MODE/run-docker.sh \$@" > /oxalis/bin/run-docker.sh
 
-
-FROM openjdk:8u191-jre-alpine3.9 as oxalis-base
+FROM openjdk:8u212-jre-alpine3.9 as oxalis-base
 
 COPY --from=mvn /oxalis /oxalis
 
