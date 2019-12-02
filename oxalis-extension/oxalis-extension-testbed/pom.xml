@@ -72,5 +72,35 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>post-jdk8-deprecations</id>
+            <activation>
+                <jdk>[1.9,)</jdk>
+            </activation>
+ 
+            <dependencies>
+                <!-- Deprecated / removed from the JDK, external dependencies now -->
+                <dependency>
+                    <groupId>com.sun.activation</groupId>
+                    <artifactId>javax.activation</artifactId>
+                </dependency>
 
+                <dependency>
+                    <groupId>javax.xml.bind</groupId>
+                    <artifactId>jaxb-api</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>com.sun.xml.bind</groupId>
+                    <artifactId>jaxb-core</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>com.sun.xml.bind</groupId>
+                    <artifactId>jaxb-impl</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>
