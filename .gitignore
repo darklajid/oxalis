@@ -21,3 +21,6 @@ rebel.xml
 /outbound
 dev.make
 /dist
+
+.vscode/
+.factorypath

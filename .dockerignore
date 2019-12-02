@@ -1,1 +1,6 @@
-**/target
+**/target/
+**/.git/
+.gitkeep
+.gitignore
+/.settings/
+/.vscode/
